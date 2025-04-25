@@ -1,0 +1,30 @@
+name: ORT Analyzer and Scanner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  ort:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use HTTPS instead of SSH for Git cloning
+        run: git config --global url.https://github.com/.insteadOf ssh://git@github.com/
+
+      - name: Run GitHub Action for ORT
+        uses: oss-review-toolkit/ort-ci-github-action@v1
+        with:
+          vcs-url: 'https://github.com/apache/httpcomponents-client.git'
+          vcs-revision: 'refs/tags/rel/v5.4.1'
+          run: >
+            cache-dependencies,
+            labels,
+            analyzer,
+            evaluator,
+            advisor,
+            scanner,
+            reporter,
+            upload-results
+          scanner: 'ScanCode'
+          ort-version: '53.0.0'
+          report-formats: 'WebApp,CycloneDx,SpdxDocument'
