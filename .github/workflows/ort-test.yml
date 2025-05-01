@@ -25,6 +25,6 @@ jobs:
             scanner,
             reporter,
             upload-results
-          scanner: 'ScanCode'
+          scanner: 'SCANOSS'
           ort-version: '53.0.0'
           report-formats: 'WebApp,CycloneDx,SpdxDocument'
