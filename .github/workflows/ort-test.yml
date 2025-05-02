@@ -11,10 +11,19 @@ jobs:
       - name: Use HTTPS instead of SSH for Git cloning
         run: git config --global url.https://github.com/.insteadOf ssh://git@github.com/
 
+      - name: Cache ORT results
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.ort/cache
+          key: ort-cache-${{ runner.os }}-${{ github.sha }}
+          restore-keys: |
+            ort-cache-${{ runner.os }}-
+
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
-          vcs-url: 'https://github.com/apache/httpcomponents-client'
+          vcs-url: 'https://github.com/apache/httpcomponents-client.git'
           #vcs-revision: 'refs/tags/rel/v5.4.1'
           run: >
             cache-dependencies,
@@ -25,6 +34,6 @@ jobs:
             scanner,
             reporter,
             upload-results
-          scanner: 'SCANOSS'
+          scanner: 'Licensee,ScanCode'
           ort-version: '53.0.0'
           report-formats: 'WebApp,CycloneDx,SpdxDocument'
