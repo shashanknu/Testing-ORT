@@ -23,7 +23,7 @@ jobs:
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
-          vcs-url: 'https://github.com/twbs/bootstrap-sass.git'
+          vcs-url: 'https://github.com/apache/httpcomponents-client.git'
           run: >
             cache-dependencies,
             labels,
@@ -33,7 +33,10 @@ jobs:
             scanner,
             reporter,
             upload-results
+          
             
-          scanner: 'Licensee,ScanCode'
+          scanner: 'ScanCode'
           ort-version: '53.0.0'
+          ort-cli-args : '-P ort.scanner.skipExcluded=true  '
+          ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument'
