@@ -33,7 +33,7 @@ jobs:
             scanner,
             reporter,
             upload-results
-            ort-cli-args : '-P ort.scanner.skipExcluded=true  '
+            
           scanner: 'Licensee,ScanCode'
           ort-version: '53.0.0'
           report-formats: 'WebApp,CycloneDx,SpdxDocument'
