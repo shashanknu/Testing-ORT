@@ -24,6 +24,7 @@ jobs:
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
           vcs-url: 'https://github.com/apache/httpcomponents-client.git'
+          vcs-revision: 'refs/tags/5.3.3'
           run: >
             cache-dependencies,
             labels,
