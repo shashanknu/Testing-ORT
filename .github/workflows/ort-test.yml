@@ -37,8 +37,6 @@ jobs:
             
           scanner: 'ScanCode'
           ort-version: '53.0.0'
-          ort-cli-args: >
-                -P ort.scanner.skipExcluded=true
-                --rules-file=.ort/rules/custom-rules.kts
+          ort-cli-args : '-P ort.scanner.skipExcluded=true'
           ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument'
