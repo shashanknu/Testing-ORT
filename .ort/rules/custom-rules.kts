@@ -10,7 +10,7 @@ val ruleSet = EvaluatorRuleSet("TrialRuleSet") {
 
     packageRule("TRIAL_APACHE_LICENSE_CHECK") {
         require {
-            license.contains("Apache-2.0", ignoreCase = true)
+            license.contains("Apache-2.0 OR EPL-2.0", ignoreCase = true)
         }
 
         info(
