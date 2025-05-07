@@ -23,7 +23,7 @@ jobs:
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
-          vcs-url: 'https://github.com/spring-projects/spring-data-commons.git'
+          vcs-url: 'https://github.com/apache/struts.git'
           run: >
             cache-dependencies,
             labels,
