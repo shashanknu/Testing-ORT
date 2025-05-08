@@ -21,6 +21,16 @@ jobs:
           restore-keys: |
             ort-cache-${{ runner.os }}-
             
+    - name: Create and move into clean working directory
+      run: |
+          mkdir ort-work
+          mv .ort ort-work/.ort  # Move your rules file to new dir
+          cd ort-work
+          echo "Working in $(pwd)"
+
+    - name: " Debug: Check rules file inside new location"
+      run: ls -R ort-work/.ort/
+            
     - name: "Debug: List contents of .ort/rules/"
       run: |
           echo "Checking .ort/rules/ directory contents..."
@@ -44,7 +54,7 @@ jobs:
             upload-results
           scanner: 'ScanCode'
           ort-version: '53.0.0'
-          ort-cli-args: ' --output-dir ort-output -P ort.scanner.skipExcluded=true '
+          ort-cli-args: ' -P ort.scanner.skipExcluded=true '
           evaluator-cli-args: ' --rules-file=.ort/rules/custom-rules.kts '
           ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument'
