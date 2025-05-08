@@ -26,6 +26,9 @@ jobs:
           echo "Checking .ort/rules/ directory contents..."
           ls -la .ort/rules/
 
+    - name: Create clean ORT output directory
+      run: mkdir -p ort-output
+
     - name: Run GitHub Action for ORT
       uses: oss-review-toolkit/ort-ci-github-action@v1
       with:
