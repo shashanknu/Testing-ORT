@@ -9,23 +9,26 @@ jobs:
 
     steps:
 
-      - name: Cache ORT results
-        uses: actions/cache@v4
-        with:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Cache ORT results
+      uses: actions/cache@v4
+      with:
           path: |
             ~/.ort/cache
           key: ort-cache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             ort-cache-${{ runner.os }}-
             
-      - name: "Debug: List contents of .ort/rules/"
-        run: |
+    - name: "Debug: List contents of .ort/rules/"
+      run: |
           echo "Checking .ort/rules/ directory contents..."
           ls -la .ort/rules/
 
-      - name: Run GitHub Action for ORT
-        uses: oss-review-toolkit/ort-ci-github-action@v1
-        with:
+    - name: Run GitHub Action for ORT
+      uses: oss-review-toolkit/ort-ci-github-action@v1
+      with:
           vcs-url: 'https://github.com/apache/struts.git'
           run: >
             cache-dependencies,
