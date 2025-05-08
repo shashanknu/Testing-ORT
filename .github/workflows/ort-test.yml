@@ -8,9 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
+    
       - name: Cache ORT results
         uses: actions/cache@v4
         with:
@@ -19,17 +17,6 @@ jobs:
           key: ort-cache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             ort-cache-${{ runner.os }}-
-
-      - name: "Debug: List all files in the repository"
-        run: find . -type f
-
-      - name: "Debug: Check contents of .ort/rules/"
-        run: |
-          echo "Checking .ort/rules/ directory contents..."
-          ls -la .ort/rules/
-
-      - name: Create clean ORT output directory
-        run: mkdir -p ort-output
 
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
@@ -49,4 +36,4 @@ jobs:
           ort-cli-args: ' -P ort.scanner.skipExcluded=true '
           evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
           ort-cli-scan-args: '--package-types=PROJECT'
-          report-formats: 'WebApp,CycloneDx,SpdxDocument'
+          report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTable'
