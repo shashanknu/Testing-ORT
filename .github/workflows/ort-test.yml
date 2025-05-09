@@ -36,4 +36,4 @@ jobs:
           ort-cli-args: ' -P ort.scanner.skipExcluded=true '
           evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
           ort-cli-scan-args: '--package-types=PROJECT'
-          report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate'
+          report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate,EvaluatedModel'
