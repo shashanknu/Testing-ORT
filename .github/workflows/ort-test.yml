@@ -21,7 +21,7 @@ jobs:
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
-          vcs-url: 'https://github.com/apache/struts.git'
+          vcs-url: 'https://github.com/twbs/bootstrap.git'
           run: >
             cache-dependencies,
             labels,
