@@ -33,7 +33,7 @@ jobs:
             upload-results
           scanner: 'ScanCode'
           ort-version: '53.0.0'
-          ort-cli-args: ' -P ort.scanner.skipExcluded=true '
+         # ort-cli-args: ' -P ort.scanner.skipExcluded=true '
           evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
-          ort-cli-scan-args: '--package-types=PROJECT'
+          #ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate,EvaluatedModel'
