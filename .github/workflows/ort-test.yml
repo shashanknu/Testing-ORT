@@ -38,3 +38,19 @@ jobs:
           evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
           ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate,EvaluatedModel'
+
+      - name: Check if ORT report directory exists and list contents
+        run: |
+          echo "Checking tools/ort-results..."
+          if [ -d "tools/ort-results" ]; then
+            echo "ORT reports generated:"
+            ls -R tools/ort-results
+          else
+            echo "tools/ort-results directory does NOT exist."
+          fi
+
+      - name: Upload ORT reports as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ort-results
+          path: tools/ort-results
