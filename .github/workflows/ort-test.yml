@@ -1,64 +1,46 @@
-name: ORT Analyzer and Scanner
+name: ORT Analysis
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  ort:
+  ort-scan:
     runs-on: ubuntu-latest
-
     steps:
+      - name: Use HTTPS for GitHub
+        run: git config --global url.https://github.com/.insteadOf ssh://git@github.com/
       - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Git user
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Cache ORT results
-        uses: actions/cache@v4
+        uses: actions/checkout@v3
         with:
-          path: ~/.ort/cache
-          key: ort-cache-${{ runner.os }}-${{ github.sha }}
-          restore-keys: |
-            ort-cache-${{ runner.os }}-
-
-      - name: Run GitHub Action for ORT
+          fetch-depth: 0
+      - name: Clean ORT output directory
+        run: rm -rf tools/ort-results || true
+      - name: Run ORT scan
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
           vcs-url: 'https://github.com/WebGoat/WebGoat.git'
-          run: >
-            cache-dependencies,
-            labels,
-            analyzer,
-            evaluator,
-            advisor,
-            scanner,
-            reporter,
-            upload-results
+          image: ghcr.io/oss-review-toolkit/ort-minimal:53.0.0
           scanner: 'ScanCode'
-          ort-version: '53.0.0'
+          run: 'cache-dependencies,labels,analyzer,evaluator,advisor,scanner,reporter,upload-results'
           ort-cli-args: '-P ort.scanner.skipExcluded=true'
           ort-cli-scan-args: '--package-types=PROJECT'
           reporter-cli-args: '--reporter.output-dir=tools/ort-results'
-          evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
           report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate,EvaluatedModel'
-
-      - name: Check if ORT report directory exists
+      - name: Verify ORT report directory exists
         run: |
-          if [ -d "tools/ort-results" ]; then
-            echo "ORT reports generated:"
-            ls -R tools/ort-results
-          else
-            echo "ORT reports directory not found!"
+          if [ ! -d "tools/ort-results" ]; then
+            echo "::error::ORT report directory 'tools/ort-results' not found!"
             exit 1
           fi
-
-      - name: Commit ORT results to repo
+      - name: Commit ORT results
         run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add tools/ort-results
-          git diff --cached --quiet || git commit -m "Add ORT results [skip ci]"
-          git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          git commit -m "Add ORT results [skip ci]"
+          git push origin main
