@@ -8,15 +8,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Git user
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: Cache ORT results
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.ort/cache
+          path: ~/.ort/cache
           key: ort-cache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             ort-cache-${{ runner.os }}-
+
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
@@ -30,27 +37,28 @@ jobs:
             scanner,
             reporter,
             upload-results
-           
           scanner: 'ScanCode'
           ort-version: '53.0.0'
-          ort-cli-args: '-P ort.scanner.skipExcluded=true '
+          ort-cli-args: '-P ort.scanner.skipExcluded=true'
+          ort-cli-scan-args: '--package-types=PROJECT'
           reporter-cli-args: '--reporter.output-dir=tools/ort-results'
           evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
-          ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate,EvaluatedModel'
-          
 
-      - name: Check if ORT report directory exists and list contents
+      - name: Check if ORT report directory exists
         run: |
-          echo "Checking tools/ort-results..."
           if [ -d "tools/ort-results" ]; then
             echo "ORT reports generated:"
             ls -R tools/ort-results
           else
-            echo "tools/ort-results directory does NOT exist."
+            echo "ORT reports directory not found!"
+            exit 1
           fi
-      - name: Upload ORT reports as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ort-results
-          path: tools/ort-results
+
+      - name: Commit ORT results to repo
+        run: |
+          git add tools/ort-results
+          git diff --cached --quiet || git commit -m "Add ORT results [skip ci]"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
