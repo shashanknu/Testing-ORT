@@ -1,19 +1,14 @@
-name: ORT Analyzer and Scanner with EPSS Extraction
+name: ORT Analyzer and Scanner
 
 on:
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   ort:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+    
       - name: Cache ORT results
         uses: actions/cache@v4
         with:
@@ -22,7 +17,6 @@ jobs:
           key: ort-cache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             ort-cache-${{ runner.os }}-
-
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
         with:
@@ -36,6 +30,7 @@ jobs:
             scanner,
             reporter,
             upload-results
+           
           scanner: 'ScanCode'
           ort-version: '53.0.0'
           ort-cli-args: '-P ort.scanner.skipExcluded=true '
@@ -43,50 +38,19 @@ jobs:
           evaluator-cli-args: '--rules-file=.ort/rules/custom-rules.kts'
           ort-cli-scan-args: '--package-types=PROJECT'
           report-formats: 'WebApp,CycloneDx,SpdxDocument,PdfTemplate,EvaluatedModel'
+          
 
-      - name: Ensure tools/ort-results exists and list contents
+      - name: Check if ORT report directory exists and list contents
         run: |
           echo "Checking tools/ort-results..."
           if [ -d "tools/ort-results" ]; then
-            echo "ORT reports generated:" && ls -R tools/ort-results
+            echo "ORT reports generated:"
+            ls -R tools/ort-results
           else
-            echo "tools/ort-results directory does NOT exist." && exit 1
-
+            echo "tools/ort-results directory does NOT exist."
+          fi
       - name: Upload ORT reports as artifact
         uses: actions/upload-artifact@v4
         with:
           name: ort-results
           path: tools/ort-results
-
-      - name: Install Python and dependencies for EPSS
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3 python3-pip
-          pip install requests
-
-      - name: Run EPSS extraction script
-        run: |
-          python3 scripts/extract_epss.py tools/ort-results/advisor-results.json
-
-      - name: Verify EPSS output
-        run: |
-          echo "Verifying tools/epss directory contents:"
-          ls -R tools/epss
-          if [ ! -f tools/epss/epss-results.json ]; then
-            echo "Error: tools/epss/epss-results.json not found!"
-            exit 1
-          fi
-
-      - name: Commit and push EPSS results to repo
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-          git add tools/epss/epss-results.json
-
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-          else
-            git commit -m "Add EPSS results [skip ci]"
-            git push origin HEAD:${{ github.ref }}
-          fi
