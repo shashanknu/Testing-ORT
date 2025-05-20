@@ -3,6 +3,9 @@ name: ORT Analyzer and Scanner with EPSS Extraction
 on:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   ort:
     runs-on: ubuntu-latest
@@ -19,6 +22,11 @@ jobs:
           key: ort-cache-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             ort-cache-${{ runner.os }}-
+
+      - name: Clean ORT output directory
+        run: |
+          rm -rf tools/ort-results
+          mkdir -p tools/ort-results
 
       - name: Run GitHub Action for ORT
         uses: oss-review-toolkit/ort-ci-github-action@v1
@@ -65,10 +73,25 @@ jobs:
         run: |
           python3 scripts/extract_epss.py tools/ort-results/advisor-results.json
 
-      - name: Upload EPSS report
-        uses: actions/upload-artifact@v4
-        with:
-          name: epss-results
-          path: tools/epss/epss-results.json
-          
+      - name: Verify EPSS output
+        run: |
+          echo "Verifying tools/epss directory contents:"
+          ls -R tools/epss
+          if [ ! -f tools/epss/epss-results.json ]; then
+            echo "Error: tools/epss/epss-results.json not found!"
+            exit 1
+          fi
 
+      - name: Commit and push EPSS results to repo
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add tools/epss/epss-results.json
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Add EPSS results [skip ci]"
+            git push origin HEAD:${{ github.ref }}
+          fi
