@@ -1,59 +1,46 @@
+import os
 import json
 import requests
 import sys
-import os
 
-def extract_cves(advisor_json):
-    cves = set()
+def extract_cves_and_cvss(advisor_json):
+    cves = []
     for result in advisor_json.get("advisor", {}).get("results", []):
         for vulnerability in result.get("vulnerabilities", []):
             cve_id = vulnerability.get("id")
             if cve_id and cve_id.startswith("CVE-"):
-                cves.add(cve_id)
-    return list(cves)
+                cves.append(cve_id)
+    return list(set(cves))
 
-def get_epss_score(cve):
-    url = f"https://api.first.org/data/v1/epss?cve={cve}"
-    try:
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        data = response.json()
-        score_data = data.get("data", [])
-        if score_data:
-            return {
-                "cve": score_data[0].get("cve"),
-                "epss": float(score_data[0].get("epss", 0)),
-                "percentile": float(score_data[0].get("percentile", 0))
-            }
-    except Exception as e:
-        print(f"Failed to fetch EPSS for {cve}: {e}")
-    return {"cve": cve, "epss": None, "percentile": None}
+def fetch_epss_scores(cve_ids):
+    url = "https://api.first.org/data/v1/epss"
+    params = {"cve": ",".join(cve_ids)}
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        return response.json().get("data", [])
+    else:
+        print(f"Error fetching EPSS scores: {response.status_code}")
+        return []
 
 def main():
     if len(sys.argv) != 2:
-        print("Usage: python3 extract_epss.py <path_to_advisor-results.json>")
+        print("Usage: python3 extract_epss.py <advisor-results.json>")
         sys.exit(1)
 
-    advisor_path = sys.argv[1]
+    input_path = sys.argv[1]
+    output_dir = "tools/epss"
+    os.makedirs(output_dir, exist_ok=True)
 
-    if not os.path.exists(advisor_path):
-        print(f"Error: File '{advisor_path}' does not exist.")
-        sys.exit(1)
+    with open(input_path, "r") as f:
+        advisor_data = json.load(f)
 
-    with open(advisor_path, "r", encoding="utf-8") as f:
-        advisor_json = json.load(f)
+    cve_ids = extract_cves_and_cvss(advisor_data)
+    epss_data = fetch_epss_scores(cve_ids)
 
-    cve_list = extract_cves(advisor_json)
-    print(f"Found {len(cve_list)} unique CVEs.")
+    with open(os.path.join(output_dir, "epss-results.json"), "w") as f:
+        json.dump(epss_data, f, indent=2)
 
-    epss_results = [get_epss_score(cve) for cve in cve_list]
-
-    output_path = "epss-results.json"
-    with open(output_path, "w", encoding="utf-8") as out_file:
-        json.dump(epss_results, out_file, indent=2)
-
-    print(f"EPSS results written to '{output_path}'.")
+    print(f"EPSS results written to {os.path.join(output_dir, 'epss-results.json')}")
 
 if __name__ == "__main__":
     main()
-
