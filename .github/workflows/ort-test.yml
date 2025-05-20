@@ -69,5 +69,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: epss-results
-          path: epss-results.json
+          path: tools/epss/epss-results.json
+          
 
